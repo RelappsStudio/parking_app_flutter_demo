@@ -1,16 +1,14 @@
-import 'package:flutter/material.dart';
 
-import 'suggestion.dart';
+import 'package:flutter/material.dart';
+import 'package:simple_parking_app/add_spot_screen/components/place_service.dart';
 
 class AddressSearch extends SearchDelegate<Suggestion> {
-
   AddressSearch(this.sessionToken) {
     apiClient = PlaceApiProvider(sessionToken);
   }
 
   final sessionToken;
   PlaceApiProvider apiClient;
-
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -44,8 +42,10 @@ class AddressSearch extends SearchDelegate<Suggestion> {
   @override
   Widget buildSuggestions(BuildContext context) {
     return FutureBuilder(
-      // We will put the api call here
-      future: null,
+      future: query == ""
+          ? null
+          : apiClient.fetchSuggestions(
+          query, Localizations.localeOf(context).languageCode),
       builder: (context, snapshot) => query == ''
           ? Container(
         padding: EdgeInsets.all(16.0),
@@ -54,11 +54,10 @@ class AddressSearch extends SearchDelegate<Suggestion> {
           : snapshot.hasData
           ? ListView.builder(
         itemBuilder: (context, index) => ListTile(
-          // we will display the data returned from our future here
           title:
-          Text(snapshot.data[index]),
+          Text((snapshot.data[index] as Suggestion).description),
           onTap: () {
-            close(context, snapshot.data[index]);
+            close(context, snapshot.data[index] as Suggestion);
           },
         ),
         itemCount: snapshot.data.length,
@@ -66,5 +65,4 @@ class AddressSearch extends SearchDelegate<Suggestion> {
           : Container(child: Text('Loading...')),
     );
   }
-  
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:simple_parking_app/add_spot_screen/components/place_service.dart';
+import 'package:simple_parking_app/database_hepler.dart';
+import 'package:simple_parking_app/place_model.dart';
 import 'package:uuid/uuid.dart';
 
 import 'address_search.dart';
-import 'suggestion.dart';
 
 class AddSpotForm extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final List<String> errors = [];
+  DatabaseHelper _databaseHelper = DatabaseHelper();
   LatLng lat_lng;
   String lat;
   String lon;
@@ -85,6 +88,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
           padding: EdgeInsets.symmetric(horizontal: 40),
           child: InkWell(
             onTap: () {
+              _databaseHelper.addPlace(ParkingPlace(0, 'test', '0.0', '0.0', 'test description', 4));
               //TODO: implement saving location
             },
             child: Container(
