@@ -7,12 +7,11 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-
   GoogleMapController mapController;
 
   final LatLng _center = const LatLng(0.0, 0.0);
 
-  void _onMapCreated(GoogleMapController controller) {
+  Future<void> _onMapCreated(GoogleMapController controller) async {
     mapController = controller;
   }
 
