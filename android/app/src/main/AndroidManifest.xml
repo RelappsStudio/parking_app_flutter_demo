@@ -3,7 +3,12 @@
    <application
         android:label="simple_parking_app"
         android:icon="@mipmap/ic_launcher">
-        <activity
+
+       <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyCNdcZy-nP9FVoMaROjKn5172sieU7KugA"/>
+
+
+       <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
