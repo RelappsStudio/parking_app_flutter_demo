@@ -25,7 +25,7 @@ class DatabaseHelper {
     var _db = await database();
     await _db.insert('places',
         place.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace).then((value) {
+        conflictAlgorithm: ConflictAlgorithm.ignore).then((value) {
           id = value;
     });
 

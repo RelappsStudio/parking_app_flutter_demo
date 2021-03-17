@@ -2,9 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:simple_parking_app/add_spot_screen/components/form_error.dart';
 import 'package:simple_parking_app/add_spot_screen/components/place_service.dart';
 import 'package:simple_parking_app/database_hepler.dart';
+import 'package:simple_parking_app/errors.dart';
 import 'package:simple_parking_app/place_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,6 +23,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final List<String> errors = [];
+  String androidKey = 'AIzaSyCNdcZy-nP9FVoMaROjKn5172sieU7KugA';
   DatabaseHelper _databaseHelper = DatabaseHelper();
   LatLng lat_lng;
   String lat;
@@ -43,7 +47,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
         children: [
           buildNameFormField(),
           SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
-          TextField(
+          TextFormField(
             controller: _controller,
             readOnly: true,
             onTap: () async {
@@ -54,8 +58,16 @@ class _AddSpotFormState extends State<AddSpotForm> {
               );
               // This will change the text displayed in the TextField
               if (result != null) {
-                setState(() {
+
+                setState(() async{
                   _controller.text = result.description;
+                  setState(() {
+                    if (errors.contains(kNullAddressName))
+                    {
+                      errors.remove(kNullAddressName);
+                    }
+                  });
+                  await getLatLng(result.placeId);
                 });
               }
             },
@@ -68,6 +80,16 @@ class _AddSpotFormState extends State<AddSpotForm> {
               hintText: 'Location of the parking spot',
               suffixIcon: Icon(Icons.location_on_outlined),
             ),
+            validator: (value)
+            {
+              if (value.isEmpty && !errors.contains(kNullAddressName))
+              {
+                setState(() {
+                  errors.add(kNullAddressName);
+                });
+              }
+              return null;
+            },
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
           buildDescFormField(),
@@ -79,6 +101,8 @@ class _AddSpotFormState extends State<AddSpotForm> {
           ),
           SizedBox(height: MediaQuery.of(context).size.height * 0.03,),
           buildRatingRow(),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.03,),
+          FormError(errors: errors),
           SizedBox(height: MediaQuery.of(context).size.height * 0.2,),
           buildSaveButton(),
         ],
@@ -86,14 +110,30 @@ class _AddSpotFormState extends State<AddSpotForm> {
     );
   }
 
+  Future<void> getLatLng(String placeID)
+  async {
+    final query = placeID;
+    var addresses = await Geocoder.local.findAddressesFromQuery(query);
+    var first = addresses.first;
+    lat = first.coordinates.latitude.toString();
+    lon = first.coordinates.longitude.toString();
+  }
+
   Padding buildSaveButton() {
     return Padding(
           padding: EdgeInsets.symmetric(horizontal: 40),
           child: InkWell(
             onTap: () {
+              if (_formKey.currentState.validate())
+                {
+                  if (ranking == 0 && !errors.contains(kNullRating))
+                    {
+                      errors.add(kNullRating);
+                    }
+                  _formKey.currentState.save();
+                  addPlace();
+                }
 
-             _databaseHelper.addPlace(ParkingPlace(2, 'test3', '2.0', '2.0', 'test description2', ranking));
-              Navigator.pop(context);
             },
             child: Container(
               height: 50.0,
@@ -107,6 +147,11 @@ class _AddSpotFormState extends State<AddSpotForm> {
         );
   }
 
+  Future<void> addPlace()async {
+    final  places = await _databaseHelper.getPlaces();
+    await _databaseHelper.addPlace(ParkingPlace(places.length + 1, name, lat, lon, description, ranking));
+  }
+
   SingleChildScrollView buildRatingRow() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -117,7 +162,12 @@ class _AddSpotFormState extends State<AddSpotForm> {
                 (
                 borderRadius: BorderRadius.circular(50),
                 onTap: () {
+
                   setState(() {
+                    if (errors.contains(kNullRating))
+                    {
+                      errors.remove(kNullRating);
+                    }
                     if (ranking == 1)
                       {
                         ranking = 0;
@@ -134,6 +184,10 @@ class _AddSpotFormState extends State<AddSpotForm> {
                   borderRadius: BorderRadius.circular(50),
                   onTap: () {
                     setState(() {
+                      if (errors.contains(kNullRating))
+                      {
+                        errors.remove(kNullRating);
+                      }
                       ranking = 2;
                     });
                   },
@@ -143,6 +197,10 @@ class _AddSpotFormState extends State<AddSpotForm> {
                   borderRadius: BorderRadius.circular(50),
                   onTap: () {
                     setState(() {
+                      if (errors.contains(kNullRating))
+                      {
+                        errors.remove(kNullRating);
+                      }
                       ranking = 3;
                     });
                   },
@@ -152,6 +210,10 @@ class _AddSpotFormState extends State<AddSpotForm> {
                   borderRadius: BorderRadius.circular(50),
                   onTap: () {
                     setState(() {
+                      if (errors.contains(kNullRating))
+                      {
+                        errors.remove(kNullRating);
+                      }
                       ranking = 4;
                     });
                   },
@@ -161,6 +223,10 @@ class _AddSpotFormState extends State<AddSpotForm> {
                   borderRadius: BorderRadius.circular(50),
                   onTap: () {
                     setState(() {
+                      if (errors.contains(kNullRating))
+                      {
+                        errors.remove(kNullRating);
+                      }
                       ranking = 5;
                     });
                   },
@@ -182,6 +248,22 @@ class _AddSpotFormState extends State<AddSpotForm> {
             hintText: 'Describe the parking spot',
             suffixIcon: Icon(Icons.title),
           ),
+      onChanged: (value)
+      {
+        setState(() {
+          errors.remove(kNullDescription);
+        });
+      },
+      validator: (value)
+      {
+        if (value.isEmpty && !errors.contains(kNullDescription))
+          {
+            setState(() {
+              errors.add(kNullDescription);
+            });
+          }
+        return null;
+      },
         );
   }
 
@@ -196,7 +278,24 @@ class _AddSpotFormState extends State<AddSpotForm> {
             labelText: 'Parking name',
             hintText: 'Name of the parking spot',
             suffixIcon: Icon(Icons.title),
+
           ),
+      onChanged: (value)
+      {
+        setState(() {
+          errors.remove(kNullPlaceName);
+        });
+      },
+      validator: (value)
+      {
+        if (value.isEmpty && !errors.contains(kNullPlaceName))
+        {
+          setState(() {
+            errors.add(kNullPlaceName);
+          });
+        }
+        return null;
+      },
         );
   }
 }
