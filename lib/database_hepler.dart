@@ -20,12 +20,14 @@ class DatabaseHelper {
 
   Future<int> addPlace(ParkingPlace place) async
   {
-    int id = 0;
+    var id = 0;
 
-    Database _db = await database();
+    var _db = await database();
     await _db.insert('places',
         place.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace).then((value) => id = value);
+        conflictAlgorithm: ConflictAlgorithm.replace).then((value) {
+          id = value;
+    });
 
     return id;
   }

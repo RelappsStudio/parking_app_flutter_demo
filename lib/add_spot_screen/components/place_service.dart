@@ -42,18 +42,19 @@ class PlaceApiProvider {
 
   final sessionToken;
 
-  static final String androidKey = 'AIzaSyA2zvqXMMAxOXQknY8QToQgyzAloc-Pb5I';
+  static final String androidKey = 'AIzaSyCNdcZy-nP9FVoMaROjKn5172sieU7KugA';
   static final String iosKey = 'YOUR_API_KEY_HERE';
   final apiKey = Platform.isAndroid ? androidKey : iosKey;
 
   Future<List<Suggestion>> fetchSuggestions(String input, String lang) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=$lang&components=country:ch&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&types=address&language=$lang&key=$apiKey&sessiontoken=$sessionToken';
     final response = await client.get(request);
 
     if (response.statusCode == 200) {
       log('status= ok---------------------------------------------------------');
       final result = json.decode(response.body);
+      log('result= $result----------------------------------');
       if (result['status'] == 'OK') {
         // compose suggestions in a list
         return result['predictions']

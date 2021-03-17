@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -42,6 +44,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
           buildNameFormField(),
           SizedBox(height: MediaQuery.of(context).size.height * 0.05,),
           TextField(
+            controller: _controller,
             readOnly: true,
             onTap: () async {
               final sessionToken = Uuid().v4();
@@ -88,8 +91,9 @@ class _AddSpotFormState extends State<AddSpotForm> {
           padding: EdgeInsets.symmetric(horizontal: 40),
           child: InkWell(
             onTap: () {
-              _databaseHelper.addPlace(ParkingPlace(0, 'test', '0.0', '0.0', 'test description', 4));
-              //TODO: implement saving location
+
+             _databaseHelper.addPlace(ParkingPlace(2, 'test3', '2.0', '2.0', 'test description2', ranking));
+              Navigator.pop(context);
             },
             child: Container(
               height: 50.0,
@@ -191,7 +195,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
             floatingLabelBehavior: FloatingLabelBehavior.always,
             labelText: 'Parking name',
             hintText: 'Name of the parking spot',
-            suffixIcon: Icon(Icons.location_on_outlined),
+            suffixIcon: Icon(Icons.title),
           ),
         );
   }
