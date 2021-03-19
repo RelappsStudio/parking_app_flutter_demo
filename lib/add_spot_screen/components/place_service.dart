@@ -5,21 +5,19 @@ import 'dart:io';
 import 'package:http/http.dart';
 
 class Place {
-  String streetNumber;
-  String street;
-  String city;
-  String zipCode;
+  String lat;
+  String lon;
+
 
   Place({
-    this.streetNumber,
-    this.street,
-    this.city,
-    this.zipCode,
+    this.lat,
+    this.lon,
+
   });
 
   @override
   String toString() {
-    return 'Place(streetNumber: $streetNumber, street: $street, city: $city, zipCode: $zipCode)';
+    return 'Place(streetNumber: $lat, street: $lon)';
   }
 }
 
@@ -52,9 +50,8 @@ class PlaceApiProvider {
     final response = await client.get(request);
 
     if (response.statusCode == 200) {
-      log('status= ok---------------------------------------------------------');
+
       final result = json.decode(response.body);
-      log('result= $result----------------------------------');
       if (result['status'] == 'OK') {
         // compose suggestions in a list
         return result['predictions']
@@ -72,31 +69,18 @@ class PlaceApiProvider {
 
   Future<Place> getPlaceDetailFromId(String placeId) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=address_component&key=$apiKey&sessiontoken=$sessionToken';
+        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry/location&key=$apiKey&sessiontoken=$sessionToken';
     final response = await client.get(request);
 
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        final components =
-        result['result']['address_components'] as List<dynamic>;
+
         // build result
         final place = Place();
-        components.forEach((c) {
-          final List type = c['types'];
-          if (type.contains('street_number')) {
-            place.streetNumber = c['long_name'];
-          }
-          if (type.contains('route')) {
-            place.street = c['long_name'];
-          }
-          if (type.contains('locality')) {
-            place.city = c['long_name'];
-          }
-          if (type.contains('postal_code')) {
-            place.zipCode = c['long_name'];
-          }
-        });
+        place.lat = result['result']['geometry']['location']['lat'].toString();
+        place.lon = result['result']['geometry']['location']['lng'].toString();
+
         return place;
       }
       throw Exception(result['error_message']);

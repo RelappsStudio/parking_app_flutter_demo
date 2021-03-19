@@ -32,6 +32,11 @@ class DatabaseHelper {
     return id;
   }
 
+  Future<void> deletePlace(int id) async {
+    var _db = await database();
+    await _db.rawDelete("DELETE FROM places WHERE id = '$id'");
+  }
+
   Future<List<ParkingPlace>> getPlaces() async
   {
     Database _db = await database();

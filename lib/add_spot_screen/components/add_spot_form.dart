@@ -1,13 +1,13 @@
-import 'dart:developer';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:geocoder/geocoder.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'package:simple_parking_app/add_spot_screen/components/form_error.dart';
 import 'package:simple_parking_app/add_spot_screen/components/place_service.dart';
 import 'package:simple_parking_app/database_hepler.dart';
 import 'package:simple_parking_app/errors.dart';
+import 'package:simple_parking_app/main.dart';
 import 'package:simple_parking_app/place_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,9 +23,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final List<String> errors = [];
-  String androidKey = 'AIzaSyCNdcZy-nP9FVoMaROjKn5172sieU7KugA';
-  DatabaseHelper _databaseHelper = DatabaseHelper();
-  LatLng lat_lng;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
   String lat;
   String lon;
   String name;
@@ -58,16 +56,17 @@ class _AddSpotFormState extends State<AddSpotForm> {
               );
               // This will change the text displayed in the TextField
               if (result != null) {
-
-                setState(() async{
+                var placeAddress = await PlaceApiProvider(Uuid().v4()).getPlaceDetailFromId(result.placeId);
+                setState(() {
+                  lat = placeAddress.lat;
+                  lon = placeAddress.lon;
                   _controller.text = result.description;
-                  setState(() {
-                    if (errors.contains(kNullAddressName))
-                    {
-                      errors.remove(kNullAddressName);
-                    }
-                  });
-                  await getLatLng(result.placeId);
+
+                  if (errors.contains(kNullAddressName))
+                  {
+                    errors.remove(kNullAddressName);
+                  }
+
                 });
               }
             },
@@ -87,6 +86,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
                 setState(() {
                   errors.add(kNullAddressName);
                 });
+                return "";
               }
               return null;
             },
@@ -110,28 +110,20 @@ class _AddSpotFormState extends State<AddSpotForm> {
     );
   }
 
-  Future<void> getLatLng(String placeID)
-  async {
-    final query = placeID;
-    var addresses = await Geocoder.local.findAddressesFromQuery(query);
-    var first = addresses.first;
-    lat = first.coordinates.latitude.toString();
-    lon = first.coordinates.longitude.toString();
-  }
-
   Padding buildSaveButton() {
     return Padding(
           padding: EdgeInsets.symmetric(horizontal: 40),
           child: InkWell(
             onTap: () {
-              if (_formKey.currentState.validate())
+              if (ranking == 0 && !errors.contains(kNullRating))
+              {
+                errors.add(kNullRating);
+              }
+              if (_formKey.currentState.validate() && errors.isEmpty)
                 {
-                  if (ranking == 0 && !errors.contains(kNullRating))
-                    {
-                      errors.add(kNullRating);
-                    }
                   _formKey.currentState.save();
                   addPlace();
+                  RestartWidget.restartApp(context);
                 }
 
             },
@@ -261,6 +253,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
             setState(() {
               errors.add(kNullDescription);
             });
+            return "";
           }
         return null;
       },
@@ -293,6 +286,7 @@ class _AddSpotFormState extends State<AddSpotForm> {
           setState(() {
             errors.add(kNullPlaceName);
           });
+          return "";
         }
         return null;
       },
